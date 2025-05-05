@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"io"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
 	"github.com/google/uuid"
-	"encoding/base64"
+	"io"
+	"net/http"
+	"os"
 )
 
 func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Request) {
@@ -47,9 +47,20 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 
 	}
-	filedata, err := io.ReadAll(file)
+
+	assetPath := getAssetPath(videoID, contentType)
+	assetDiskPath := cfg.getAssetDiskPath(assetPath)
+
+	dest, err := os.Create(assetDiskPath)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error reading file", err)
+		respondWithError(w, http.StatusInternalServerError, "Unable to create file", err)
+		return
+	}
+	defer dest.Close()
+
+	_, err = io.Copy(dest, file) // bytes.NewReader(filedata))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not save thumbnail file", err)
 		return
 	}
 
@@ -64,8 +75,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	thumbnailData := base64.StdEncoding.EncodeToString(filedata)
-	thumbnailURL := fmt.Sprintf("data:%s;base64,%s", contentType, thumbnailData)
+	thumbnailURL := cfg.getAssetURL(assetPath)
 
 	videoData.ThumbnailURL = &thumbnailURL
 
