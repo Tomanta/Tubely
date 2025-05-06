@@ -52,7 +52,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	assetPath := getAssetPath(videoID, mediaType)
+	assetPath := getAssetPath(mediaType)
 	assetDiskPath := cfg.getAssetDiskPath(assetPath)
 
 	dest, err := os.Create(assetDiskPath)
@@ -62,7 +62,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	}
 	defer dest.Close()
 
-	_, err = io.Copy(dest, file) // bytes.NewReader(filedata))
+	_, err = io.Copy(dest, file)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not save thumbnail file", err)
 		return
