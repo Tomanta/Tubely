@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/config"
+	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -19,7 +20,7 @@ type apiConfig struct {
 	platform         string
 	filepathRoot     string
 	assetsRoot       string
-	s3Client 		 *s3.Client
+	s3Client         *s3.Client
 	s3Bucket         string
 	s3Region         string
 	s3CfDistribution string
@@ -88,7 +89,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Could not create S3 configuration")
 	}
-
+	client := s3.NewFromConfig(s3_config)
 
 	cfg := apiConfig{
 		db:               db,
@@ -96,7 +97,7 @@ func main() {
 		platform:         platform,
 		filepathRoot:     filepathRoot,
 		assetsRoot:       assetsRoot,
-		s3Client:		  NewFromConfig(s3_config),
+		s3Client:         client,
 		s3Bucket:         s3Bucket,
 		s3Region:         s3Region,
 		s3CfDistribution: s3CfDistribution,
